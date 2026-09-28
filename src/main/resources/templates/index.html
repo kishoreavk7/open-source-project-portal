@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <title>Open Source Project Portal</title>
 
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -68,7 +70,7 @@
             background: #f3f4f6;
             padding: 18px 25px;
             border-radius: 8px;
-            min-width: 150px;
+            min-width: 160px;
         }
 
         .stat strong {
@@ -91,8 +93,16 @@
             color: white;
         }
 
+        .button:hover {
+            background: #1d4ed8;
+        }
+
         .button.secondary {
             background: #374151;
+        }
+
+        .button.secondary:hover {
+            background: #1f2937;
         }
 
         .install {
@@ -109,6 +119,7 @@
             padding: 20px;
             border-radius: 8px;
             overflow-x: auto;
+            line-height: 1.8;
         }
 
         footer {
@@ -116,73 +127,119 @@
             padding: 30px;
             color: #777;
         }
+
     </style>
+
 </head>
 
 <body>
 
 <header>
+
     <h1>Open Source Project Portal</h1>
-    <p>Discover, install and explore open-source projects</p>
+
+    <p>
+        Discover, install and explore open-source projects
+    </p>
+
 </header>
+
 
 <div class="container">
 
     <div class="project">
 
-        <h2>DevOps Demo Project</h2>
+        <h2>Open Source Project Portal</h2>
 
         <p class="project-description">
-            A sample open-source project deployed using a complete
-            DevOps pipeline with GitHub, Jenkins, Docker, Terraform,
-            Ansible and Kubernetes.
+
+            A DevOps project that provides information about an
+            open-source GitHub repository, including repository
+            statistics and installation instructions.
+
         </p>
+
+
+        <!-- GitHub Statistics -->
 
         <div class="stats">
 
             <div class="stat">
-                <strong>⭐ 1,245</strong>
+
+                <strong>
+                    ⭐ <span th:text="${stars}">0</span>
+                </strong>
+
                 GitHub Stars
+
             </div>
 
+
             <div class="stat">
-                <strong>🍴 238</strong>
+
+                <strong>
+                    🍴 <span th:text="${forks}">0</span>
+                </strong>
+
                 Forks
+
             </div>
 
+
             <div class="stat">
-                <strong>🐛 18</strong>
+
+                <strong>
+                    🐛 <span th:text="${issues}">0</span>
+                </strong>
+
                 Open Issues
+
             </div>
 
         </div>
+
+
+        <!-- Buttons -->
 
         <div class="buttons">
 
-            <a href="https://github.com/" target="_blank"
-               class="button">
+            <a
+                href="https://github.com/kishoreavk7/open-source-project-portal"
+                target="_blank"
+                class="button">
+
                 View GitHub
+
             </a>
 
-            <a href="#install"
-               class="button secondary">
+
+            <a
+                href="#install"
+                class="button secondary">
+
                 Installation Guide
+
             </a>
 
         </div>
 
+
+        <!-- Installation Guide -->
+
         <div class="install" id="install">
 
-            <h3>Installation</h3>
+            <h3>Installation Guide</h3>
 
             <pre>
-git clone https://github.com/example/project.git
+git clone https://github.com/kishoreavk7/open-source-project-portal.git
 
-cd project
+cd open-source-project-portal
 
-docker build -t open-source-project .
+mvn clean package
 
-docker run -p 8080:8080 open-source-project
+docker build -t open-source-project-portal .
+
+docker run -p 8080:8080 open-source-project-portal
             </pre>
 
         </div>
@@ -191,9 +248,14 @@ docker run -p 8080:8080 open-source-project
 
 </div>
 
+
 <footer>
+
     Open Source Project Portal | DevOps Project
+
 </footer>
 
+
 </body>
+
 </html>
