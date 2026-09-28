@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Open Source Project Portal</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 25px 8%;
+        }
+
+        header h1 {
+            font-size: 30px;
+        }
+
+        header p {
+            margin-top: 8px;
+            color: #d1d5db;
+        }
+
+        .container {
+            width: 84%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .project {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .project h2 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .project-description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #f3f4f6;
+            padding: 18px 25px;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .buttons {
+            margin: 25px 0;
+        }
+
+        .button {
+            display: inline-block;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 7px;
+            margin-right: 10px;
+            background: #2563eb;
+            color: white;
+        }
+
+        .button.secondary {
+            background: #374151;
+        }
+
+        .install {
+            margin-top: 30px;
+        }
+
+        .install h3 {
+            margin-bottom: 15px;
+        }
+
+        pre {
+            background: #111827;
+            color: #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Open Source Project Portal</h1>
+    <p>Discover, install and explore open-source projects</p>
+</header>
+
+<div class="container">
+
+    <div class="project">
+
+        <h2>DevOps Demo Project</h2>
+
+        <p class="project-description">
+            A sample open-source project deployed using a complete
+            DevOps pipeline with GitHub, Jenkins, Docker, Terraform,
+            Ansible and Kubernetes.
+        </p>
+
+        <div class="stats">
+
+            <div class="stat">
+                <strong>⭐ 1,245</strong>
+                GitHub Stars
+            </div>
+
+            <div class="stat">
+                <strong>🍴 238</strong>
+                Forks
+            </div>
+
+            <div class="stat">
+                <strong>🐛 18</strong>
+                Open Issues
+            </div>
+
+        </div>
+
+        <div class="buttons">
+
+            <a href="https://github.com/" target="_blank"
+               class="button">
+                View GitHub
+            </a>
+
+            <a href="#install"
+               class="button secondary">
+                Installation Guide
+            </a>
+
+        </div>
+
+        <div class="install" id="install">
+
+            <h3>Installation</h3>
+
+            <pre>
+git clone https://github.com/example/project.git
+
+cd project
+
+docker build -t open-source-project .
+
+docker run -p 8080:8080 open-source-project
+            </pre>
+
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    Open Source Project Portal | DevOps Project
+</footer>
+
+</body>
+</html>
