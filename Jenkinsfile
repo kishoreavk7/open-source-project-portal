@@ -19,10 +19,10 @@ pipeline {
     environment {
         // Docker Registry Configuration
         DOCKER_REGISTRY       = 'docker.io'
-        DOCKER_IMAGE          = 'kishoreavk7/open-source-project-portal'
+        DOCKER_IMAGE          = 'kishoreavk/open-source-project-portal'
         DOCKER_TAG            = "${BUILD_NUMBER}"
 
-        // Updated Jenkins Docker Hub credential ID
+        // Jenkins Docker Hub credential
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials-v2'
 
         // Dynamic detection for cross-platform agent execution
@@ -38,7 +38,7 @@ pipeline {
     stages {
 
         // =================================================================
-        // Stage 1: Checkout Source Code from GitHub
+        // Stage 1: Checkout Source Code
         // =================================================================
         stage('Checkout') {
             steps {
@@ -89,7 +89,6 @@ pipeline {
 
             post {
                 always {
-                    // Record test results for Jenkins dashboard
                     junit(
                         testResults: '**/target/surefire-reports/*.xml',
                         allowEmptyResults: true
@@ -99,11 +98,11 @@ pipeline {
         }
 
         // =================================================================
-        // Stage 4: Package Spring Boot Executable JAR
+        // Stage 4: Package Spring Boot JAR
         // =================================================================
         stage('Package') {
             steps {
-                echo "===> Stage 4: Packaging Spring Boot JAR artifact..."
+                echo "===> Stage 4: Packaging Spring Boot Executable JAR artifact..."
 
                 script {
                     if (isUnix()) {
@@ -116,7 +115,6 @@ pipeline {
 
             post {
                 success {
-                    // Archive generated JAR
                     archiveArtifacts(
                         artifacts: 'target/*.jar',
                         fingerprint: true
@@ -126,14 +124,13 @@ pipeline {
         }
 
         // =================================================================
-        // Stage 5: Docker Container Image Build
+        // Stage 5: Docker Image Build
         // =================================================================
         stage('Docker Build') {
             steps {
                 echo "===> Stage 5: Building multi-stage Docker container image..."
 
                 script {
-                    // Build both build-number and latest tags
                     if (isUnix()) {
                         sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
                     } else {
@@ -144,7 +141,7 @@ pipeline {
         }
 
         // =================================================================
-        // Stage 6: Secure Docker Registry Login
+        // Stage 6: Docker Hub Login
         // =================================================================
         stage('Docker Login') {
             steps {
@@ -159,9 +156,15 @@ pipeline {
                 ]) {
                     script {
                         if (isUnix()) {
-                            sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                            sh '''
+                                echo "$DOCKER_PASS" | docker login \
+                                    -u "$DOCKER_USER" \
+                                    --password-stdin
+                            '''
                         } else {
-                            bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                            bat '''
+                                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                            '''
                         }
                     }
                 }
@@ -169,11 +172,11 @@ pipeline {
         }
 
         // =================================================================
-        // Stage 7: Push Image to Docker Hub
+        // Stage 7: Push Docker Image
         // =================================================================
         stage('Docker Push') {
             steps {
-                echo "===> Stage 7: Pushing Docker images to container registry..."
+                echo "===> Stage 7: Pushing Docker images to Docker Hub..."
 
                 script {
                     if (isUnix()) {
@@ -189,7 +192,7 @@ pipeline {
     }
 
     // =====================================================================
-    // Post-Pipeline Actions & Notifications
+    // Post-Pipeline Actions
     // =====================================================================
     post {
 
@@ -202,7 +205,7 @@ pipeline {
         }
 
         always {
-            echo "Pipeline finished. Cleaning workspace artifacts..."
+            echo "Pipeline finished."
         }
     }
 }
