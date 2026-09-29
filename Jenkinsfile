@@ -1,10 +1,11 @@
 // =========================================================================
-// Jenkins Declarative Pipeline - Open Source Project Portal
-// Project #91
-// CI/CD: Checkout -> Build -> Test -> Package -> Docker Build -> Login -> Push
+// Project #91 - Open Source Project Portal
+// Jenkins CI/CD Pipeline
+// GitHub -> Jenkins -> Maven -> Docker -> Docker Hub
 // =========================================================================
 
 pipeline {
+
     agent any
 
     triggers {
@@ -29,32 +30,30 @@ pipeline {
     stages {
 
         // ================================================================
-        // STAGE 1 - CHECKOUT
+        // 1. CHECKOUT
         // ================================================================
         stage('Checkout') {
             steps {
-                echo "===> Stage 1: Checking out source code from Git repository..."
+                echo '===> Stage 1: Checking out source code...'
 
                 checkout scm
 
-                script {
-                    echo "Current Git Commit: ${env.GIT_COMMIT}"
-                    echo "Current Git Branch: ${env.GIT_BRANCH}"
-                    echo "Build Number: ${env.BUILD_NUMBER}"
-                }
+                echo "Git Commit: ${env.GIT_COMMIT}"
+                echo "Git Branch: ${env.GIT_BRANCH}"
+                echo "Build Number: ${env.BUILD_NUMBER}"
             }
         }
 
         // ================================================================
-        // STAGE 2 - MAVEN BUILD
+        // 2. MAVEN BUILD
         // ================================================================
         stage('Maven Build') {
             steps {
-                echo "===> Stage 2: Compiling Java 21 source code..."
+                echo '===> Stage 2: Compiling Java 21 source code...'
 
                 script {
                     if (isUnix()) {
-                        sh "chmod +x mvnw"
+                        sh 'chmod +x mvnw'
                         sh "${MAVEN_WRAPPER} clean compile -B"
                     } else {
                         bat "${MAVEN_WRAPPER} clean compile -B"
@@ -64,11 +63,11 @@ pipeline {
         }
 
         // ================================================================
-        // STAGE 3 - MAVEN TEST
+        // 3. MAVEN TEST
         // ================================================================
         stage('Maven Test') {
             steps {
-                echo "===> Stage 3: Running Unit and Integration Tests..."
+                echo '===> Stage 3: Running tests...'
 
                 script {
                     if (isUnix()) {
@@ -90,11 +89,11 @@ pipeline {
         }
 
         // ================================================================
-        // STAGE 4 - PACKAGE
+        // 4. PACKAGE
         // ================================================================
         stage('Package') {
             steps {
-                echo "===> Stage 4: Packaging Spring Boot Executable JAR artifact..."
+                echo '===> Stage 4: Creating Spring Boot JAR...'
 
                 script {
                     if (isUnix()) {
@@ -116,27 +115,27 @@ pipeline {
         }
 
         // ================================================================
-        // STAGE 5 - DOCKER BUILD
+        // 5. DOCKER BUILD
         // ================================================================
         stage('Docker Build') {
             steps {
-                echo "===> Stage 5: Building multi-stage Docker container image..."
+                echo '===> Stage 5: Building Docker image...'
 
                 script {
                     if (isUnix()) {
 
                         sh """
                             docker build \
-                                -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
-                                -t ${DOCKER_IMAGE}:latest .
+                            -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
+                            -t ${DOCKER_IMAGE}:latest .
                         """
 
                     } else {
 
                         bat """
                             docker build ^
-                                -t ${DOCKER_IMAGE}:${DOCKER_TAG} ^
-                                -t ${DOCKER_IMAGE}:latest .
+                            -t ${DOCKER_IMAGE}:${DOCKER_TAG} ^
+                            -t ${DOCKER_IMAGE}:latest .
                         """
                     }
                 }
@@ -144,12 +143,11 @@ pipeline {
         }
 
         // ================================================================
-        // STAGE 6 - DOCKER LOGIN DIAGNOSTIC
+        // 6. DOCKER LOGIN
         // ================================================================
         stage('Docker Login') {
             steps {
-
-                echo "===> Stage 6: Testing Docker Hub authentication..."
+                echo '===> Stage 6: Testing Docker Hub authentication...'
 
                 withCredentials([
                     usernamePassword(
@@ -164,14 +162,15 @@ pipeline {
                         if (isUnix()) {
 
                             sh '''
-                                echo "Jenkins OS: Unix/Linux"
-                                echo "Jenkins User: $USER"
-
-                                echo "Docker Context:"
+                                echo "Jenkins user: $USER"
+                                echo "Docker context:"
                                 docker context show
 
-                                echo "Docker Server Version:"
+                                echo "Docker server version:"
                                 docker version --format "{{.Server.Version}}"
+
+                                echo "Docker username from Jenkins credential:"
+                                echo "$DOCKER_USER"
 
                                 echo "Attempting Docker Hub login..."
 
@@ -182,57 +181,25 @@ pipeline {
 
                         } else {
 
-                            powershell '''
-                                Write-Host "============================================"
-                                Write-Host "JENKINS DOCKER AUTHENTICATION DIAGNOSTIC"
-                                Write-Host "============================================"
+                            bat '''
+                                echo Jenkins Windows User: %USERNAME%
+                                echo Jenkins User Profile: %USERPROFILE%
 
-                                Write-Host "Jenkins Windows User:"
-                                Write-Host $env:USERNAME
-
-                                Write-Host "Jenkins User Profile:"
-                                Write-Host $env:USERPROFILE
-
-                                Write-Host "Computer Name:"
-                                Write-Host $env:COMPUTERNAME
-
-                                Write-Host ""
-                                Write-Host "Docker Context:"
+                                echo Docker Context:
                                 docker context show
 
-                                Write-Host ""
-                                Write-Host "Docker Context List:"
-                                docker context ls
-
-                                Write-Host ""
-                                Write-Host "Docker Server Version:"
+                                echo Docker Server Version:
                                 docker version --format "{{.Server.Version}}"
 
-                                Write-Host ""
-                                Write-Host "Docker Info:"
-                                docker info --format "{{.ServerVersion}}"
+                                echo Docker Username From Jenkins Credential:
+                                echo %DOCKER_USER%
 
-                                Write-Host ""
-                                Write-Host "Docker Username From Jenkins Credential:"
-                                Write-Host $env:DOCKER_USER
+                                echo Attempting Docker Hub login...
 
-                                Write-Host ""
-                                Write-Host "Attempting Docker Hub login..."
-                                Write-Host "Password is intentionally NOT displayed."
+                                powershell -NoProfile -Command "$env:DOCKER_PASS | docker login --username $env:DOCKER_USER --password-stdin"
 
-                                $env:DOCKER_PASS | docker login `
-                                    --username $env:DOCKER_USER `
-                                    --password-stdin
-
-                                if ($LASTEXITCODE -ne 0) {
-                                    Write-Host ""
-                                    Write-Host "Docker Hub authentication FAILED."
-                                    exit $LASTEXITCODE
-                                }
-
-                                Write-Host ""
-                                Write-Host "Docker Hub authentication SUCCESSFUL."
-                            }
+                                if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+                            '''
                         }
                     }
                 }
@@ -240,15 +207,13 @@ pipeline {
         }
 
         // ================================================================
-        // STAGE 7 - DOCKER PUSH
+        // 7. DOCKER PUSH
         // ================================================================
         stage('Docker Push') {
             steps {
-
-                echo "===> Stage 7: Pushing Docker images to Docker Hub..."
+                echo '===> Stage 7: Pushing Docker image to Docker Hub...'
 
                 script {
-
                     if (isUnix()) {
 
                         sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
@@ -270,24 +235,21 @@ pipeline {
     post {
 
         success {
-            echo "============================================"
-            echo "SUCCESS!"
-            echo "CI/CD Pipeline completed successfully."
-            echo "Build Number: ${BUILD_NUMBER}"
+            echo '============================================'
+            echo 'SUCCESS: CI/CD Pipeline completed!'
             echo "Docker Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
-            echo "============================================"
+            echo '============================================'
         }
 
         failure {
-            echo "============================================"
-            echo "FAILURE!"
-            echo "Pipeline encountered an error."
+            echo '============================================'
+            echo 'FAILURE: Pipeline failed.'
             echo "Build Number: ${BUILD_NUMBER}"
-            echo "============================================"
+            echo '============================================'
         }
 
         always {
-            echo "Pipeline finished."
+            echo 'Pipeline finished.'
         }
     }
 }
