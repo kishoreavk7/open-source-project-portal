@@ -12,7 +12,6 @@ pipeline {
         githubPush()
 
         // Fallback polling for local demo environments
-        // Polls SCM every 5 minutes
         pollSCM('H/5 * * * *')
     }
 
@@ -25,7 +24,7 @@ pipeline {
         // Jenkins Docker Hub credential
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials-v2'
 
-        // Dynamic detection for cross-platform agent execution
+        // Maven Wrapper
         MAVEN_WRAPPER         = "${isUnix() ? './mvnw' : '.\\mvnw.cmd'}"
     }
 
@@ -156,14 +155,19 @@ pipeline {
                 ]) {
                     script {
                         if (isUnix()) {
+
                             sh '''
-                                echo "$DOCKER_PASS" | docker login \
-                                    -u "$DOCKER_USER" \
+                                printf '%s' "$DOCKER_PASS" | docker login \
+                                    --username "$DOCKER_USER" \
                                     --password-stdin
                             '''
+
                         } else {
-                            bat '''
-                                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+
+                            powershell '''
+                                $env:DOCKER_PASS | docker login `
+                                    --username $env:DOCKER_USER `
+                                    --password-stdin
                             '''
                         }
                     }
@@ -180,9 +184,12 @@ pipeline {
 
                 script {
                     if (isUnix()) {
+
                         sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
                         sh "docker push ${DOCKER_IMAGE}:latest"
+
                     } else {
+
                         bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
                         bat "docker push ${DOCKER_IMAGE}:latest"
                     }
