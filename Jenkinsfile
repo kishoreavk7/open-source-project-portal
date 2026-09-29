@@ -10,7 +10,9 @@ pipeline {
     triggers {
         // Automatically trigger on GitHub Webhook push events
         githubPush()
-        // Fallback polling for local demo environments (polls SCM every 5 minutes)
+
+        // Fallback polling for local demo environments
+        // Polls SCM every 5 minutes
         pollSCM('H/5 * * * *')
     }
 
@@ -19,9 +21,11 @@ pipeline {
         DOCKER_REGISTRY       = 'docker.io'
         DOCKER_IMAGE          = 'kishoreavk7/open-source-project-portal'
         DOCKER_TAG            = "${BUILD_NUMBER}"
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
 
-        // Dynamic detection for cross-platform agent execution (Linux / Windows)
+        // Updated Jenkins Docker Hub credential ID
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials-v2'
+
+        // Dynamic detection for cross-platform agent execution
         MAVEN_WRAPPER         = "${isUnix() ? './mvnw' : '.\\mvnw.cmd'}"
     }
 
@@ -33,11 +37,15 @@ pipeline {
 
     stages {
 
+        // =================================================================
         // Stage 1: Checkout Source Code from GitHub
+        // =================================================================
         stage('Checkout') {
             steps {
                 echo "===> Stage 1: Checking out source code from Git repository..."
+
                 checkout scm
+
                 script {
                     echo "Current Git Commit: ${env.GIT_COMMIT}"
                     echo "Current Git Branch: ${env.GIT_BRANCH}"
@@ -45,10 +53,13 @@ pipeline {
             }
         }
 
+        // =================================================================
         // Stage 2: Maven Compilation
+        // =================================================================
         stage('Maven Build') {
             steps {
                 echo "===> Stage 2: Compiling Java 21 source code..."
+
                 script {
                     if (isUnix()) {
                         sh "chmod +x mvnw"
@@ -60,10 +71,13 @@ pipeline {
             }
         }
 
+        // =================================================================
         // Stage 3: Maven Automated Testing
+        // =================================================================
         stage('Maven Test') {
             steps {
                 echo "===> Stage 3: Running Unit and Integration Tests..."
+
                 script {
                     if (isUnix()) {
                         sh "${MAVEN_WRAPPER} test -B"
@@ -72,18 +86,25 @@ pipeline {
                     }
                 }
             }
+
             post {
                 always {
-                    // Record test results for Jenkins dashboard charts
-                    junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
+                    // Record test results for Jenkins dashboard
+                    junit(
+                        testResults: '**/target/surefire-reports/*.xml',
+                        allowEmptyResults: true
+                    )
                 }
             }
         }
 
+        // =================================================================
         // Stage 4: Package Spring Boot Executable JAR
+        // =================================================================
         stage('Package') {
             steps {
                 echo "===> Stage 4: Packaging Spring Boot JAR artifact..."
+
                 script {
                     if (isUnix()) {
                         sh "${MAVEN_WRAPPER} package -DskipTests -B"
@@ -92,20 +113,27 @@ pipeline {
                     }
                 }
             }
+
             post {
                 success {
-                    // Archive the generated JAR file
-                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                    // Archive generated JAR
+                    archiveArtifacts(
+                        artifacts: 'target/*.jar',
+                        fingerprint: true
+                    )
                 }
             }
         }
 
+        // =================================================================
         // Stage 5: Docker Container Image Build
+        // =================================================================
         stage('Docker Build') {
             steps {
                 echo "===> Stage 5: Building multi-stage Docker container image..."
+
                 script {
-                    // Tag with both specific build number and 'latest' for production tracking
+                    // Build both build-number and latest tags
                     if (isUnix()) {
                         sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
                     } else {
@@ -115,16 +143,20 @@ pipeline {
             }
         }
 
+        // =================================================================
         // Stage 6: Secure Docker Registry Login
+        // =================================================================
         stage('Docker Login') {
             steps {
                 echo "===> Stage 6: Authenticating with Docker Hub using Jenkins Credentials..."
-                // Credentials are securely extracted from Jenkins Credential Store without printing to console
-                withCredentials([usernamePassword(
-                    credentialsId: env.DOCKER_CREDENTIALS_ID,
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: env.DOCKER_CREDENTIALS_ID,
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
                     script {
                         if (isUnix()) {
                             sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
@@ -136,10 +168,13 @@ pipeline {
             }
         }
 
-        // Stage 7: Push Image to Registry
+        // =================================================================
+        // Stage 7: Push Image to Docker Hub
+        // =================================================================
         stage('Docker Push') {
             steps {
                 echo "===> Stage 7: Pushing Docker images to container registry..."
+
                 script {
                     if (isUnix()) {
                         sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
@@ -153,14 +188,19 @@ pipeline {
         }
     }
 
+    // =====================================================================
     // Post-Pipeline Actions & Notifications
+    // =====================================================================
     post {
+
         success {
             echo "SUCCESS: CI/CD Pipeline completed successfully for build #${BUILD_NUMBER}!"
         }
+
         failure {
             echo "FAILURE: CI/CD Pipeline encountered an error during build #${BUILD_NUMBER}."
         }
+
         always {
             echo "Pipeline finished. Cleaning workspace artifacts..."
         }
