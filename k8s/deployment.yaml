@@ -1,0 +1,77 @@
+# =========================================================================
+# Kubernetes Deployment - Open Source Project Portal
+# High Availability (2+ Replicas), Zero-Downtime Rolling Update & Probes
+# =========================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-source-project-portal
+  namespace: open-source-portal
+  labels:
+    app: open-source-project-portal
+    tier: frontend
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+
+  # Rolling update strategy ensuring zero downtime during updates
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # Spin up 1 new pod before tearing down old ones
+      maxUnavailable: 0    # Ensure minimum available replica count is never breached
+
+  selector:
+    matchLabels:
+      app: open-source-project-portal
+
+  template:
+    metadata:
+      labels:
+        app: open-source-project-portal
+        tier: frontend
+    spec:
+      containers:
+        - name: portal
+          image: YOUR_DOCKER_USERNAME/open-source-project-portal:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          # Inject external configuration from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: portal-config
+
+          # Compute resource allocations for cluster scheduling & HPA
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          # Liveness Probe: Restarts pod if application crashes or deadlocks
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 35
+            periodSeconds: 15
+            timeoutSeconds: 4
+            failureThreshold: 3
+
+          # Readiness Probe: Routes traffic only after application has warmed up
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 25
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2

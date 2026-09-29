@@ -1,0 +1,36 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Build and target artifacts
+target/
+build/
+*.class
+
+# IDE and Editor configurations
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# Maven wrapper jar if redundant
+.mvn/wrapper/maven-wrapper.jar
+
+# Infrastructure and configuration folders not needed in container image
+terraform/
+ansible/
+k8s/
+*.md
+
+# Local secrets and environment files
+.env
+.env.*
+*.pem
+*.key
+*.tfstate
+*.tfstate.*

@@ -1,0 +1,16 @@
+# =========================================================================
+# Terraform Variables Example - Open Source Project Portal
+# Copy this file to 'terraform.tfvars' to customize for your AWS account
+# DO NOT COMMIT SENSITIVE VALUES OR ACCESS KEYS TO GIT!
+# =========================================================================
+
+aws_region          = "ap-south-1"
+environment         = "dev"
+cluster_name        = "open-source-portal-eks"
+vpc_cidr            = "10.0.0.0/16"
+public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs= ["10.0.10.0/24", "10.0.20.0/24"]
+instance_types      = ["t3.medium"]
+desired_node_count  = 2
+min_node_count      = 1
+max_node_count      = 3

@@ -1,33 +1,54 @@
-HELP.md
+# Build artifacts
 target/
+build/
+*.class
+HELP.md
+
+# Maven
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
+# IDE & Editor Configurations
+.idea/
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
+.vscode/
+.settings/
+.project
+.classpath
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# Secrets, Credentials and Environment Files
+.env
+.env.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.id_rsa
+secrets/
+
+# Terraform Local State and Directories
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform/terraform.tfvars
+!terraform/terraform.tfvars.example
+
+# Ansible Real Inventory with Host IPs
+ansible/inventory.ini
+!ansible/inventory.ini.example
+
+# Node modules (if any frontend tooling is ever run)
+node_modules/

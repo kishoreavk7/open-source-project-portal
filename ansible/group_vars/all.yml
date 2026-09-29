@@ -1,0 +1,31 @@
+# =========================================================================
+# Ansible Centralized Group Variables
+# Project: Open Source Project Portal
+# =========================================================================
+
+# Kubernetes version to install
+kubernetes_version: "1.30"
+kubernetes_package_version: "1.30.0-1.1"
+
+# Pod Network CIDR (matches standard Calico / Flannel networking)
+pod_network_cidr: "10.244.0.0/16"
+
+# Containerd runtime settings
+containerd_config_path: "/etc/containerd/config.toml"
+
+# System packages required across nodes
+common_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - software-properties-common
+  - git
+  - htop
+  - net-tools
+  - iptables
+
+# Application specific settings
+app_name: "open-source-project-portal"
+app_port: 8080

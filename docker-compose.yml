@@ -1,0 +1,26 @@
+# =========================================================================
+# Docker Compose for Local Testing - Open Source Project Portal
+# =========================================================================
+
+services:
+  portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${DOCKER_REGISTRY:-docker.io}/${DOCKER_USERNAME:-kishoreavk7}/${DOCKER_IMAGE:-open-source-project-portal}:${DOCKER_TAG:-latest}
+    container_name: open-source-project-portal
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_APPLICATION_NAME=open-source-project-portal
+      - SERVER_PORT=8080
+      - GITHUB_OWNER=kishoreavk7
+      - GITHUB_REPOSITORY=open-source-project-portal
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
