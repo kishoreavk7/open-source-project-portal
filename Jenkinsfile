@@ -1,11 +1,18 @@
 // =========================================================================
 // Jenkins Declarative Pipeline - Open Source Project Portal
 // Complete CI/CD: Checkout -> Build -> Test -> Package -> Docker -> Push
-// Designed for College Viva Explanation & Production Best Practices
+// Designed for Automated Webhook & SCM Polling Triggers
 // =========================================================================
 
 pipeline {
     agent any
+
+    triggers {
+        // Automatically trigger on GitHub Webhook push events
+        githubPush()
+        // Fallback polling for local demo environments (polls SCM every 5 minutes)
+        pollSCM('H/5 * * * *')
+    }
 
     environment {
         // Docker Registry Configuration
